@@ -547,21 +547,27 @@ var hqWidgets = {
         this._setUsejQueryStyle = function (isUse, isUpdate) {
             this.settings.usejQueryStyle = isUse;
             
-            this.settings._jelement.removeClass ("ui-state-default ui-state-hover ui-state-active");
+            this.settings._jelement.removeClass ("ui-state-default").
+            removeClass("ui-state-hover").removeClass("ui-state-active").
+            removeClass("hq-button-base-normal").removeClass("hq-button-base-normal-hover").
+            removeClass("hq-button-base-intemp").removeClass("hq-button-base-intemp-hover").
+            removeClass("hq-button-base-intemp").removeClass("hq-button-base-intemp-hover").
+            removeClass("hq-button-base-on").removeClass("hq-button-base-on-hover");
+            this.settings._currentClass = ""; // force update
             if (isUse) {
                 // Colors of the states
                 if (!this.settings.noBackground) {
                     if (this.settings.buttonType == hqWidgets.gButtonType.gTypeInTemp)
                     {
-                        this.settings._backOff        = "ui-state-default hq-button-base-intemp";
-                        this.settings._backOffHover   = "ui-state-hover hq-button-base-intemp-hover";
+                        this.settings._backOff        = "ui-state-default";
+                        this.settings._backOffHover   = "ui-state-hover";
                         this.settings._backMoving     = "hq-button-base-moving";
                     }
                     else
                     if (this.settings.buttonType == hqWidgets.gButtonType.gTypeOutTemp)
                     {
-                        this.settings._backOff        = "hq-button-base-outtemp ui-state-default";
-                        this.settings._backOffHover   = "hq-button-base-outtemp-hover ui-state-hover";
+                        this.settings._backOff        = "ui-state-default";
+                        this.settings._backOffHover   = "ui-state-hover";
                         this.settings._backMoving     = "hq-button-base-moving";
                     }
                     else
@@ -572,12 +578,12 @@ var hqWidgets = {
                     }
                     else
                     {
-                        this.settings._backOff        = "ui-state-default hq-button-base-normal";
-                        this.settings._backOffHover   = "ui-state-hover hq-button-base-normal-hover";
+                        this.settings._backOff        = "ui-state-default";
+                        this.settings._backOffHover   = "ui-state-hover";
                         this.settings._backMoving     = "hq-button-base-moving";
                     }                
-                    this.settings._backOn         = "ui-state-active hq-button-base-on";
-                    this.settings._backOnHover    = "ui-state-active hq-button-base-on-hover";
+                    this.settings._backOn         = "ui-state-active";
+                    this.settings._backOnHover    = "ui-state-active";
                 }
                 else {
                     this.settings._backOff        = "";
@@ -627,7 +633,7 @@ var hqWidgets = {
                 }
 
             }
-            if (isUpdate)
+            //if (isUpdate)
                 this.ShowState ();
         };
         // Draw window content
@@ -1774,6 +1780,8 @@ var hqWidgets = {
                         hqWidgets.gDynamics.gActiveElement = this;
                         this.settings._cursorX = this.settings.x + this.settings.width  / 2;
                         this.settings._cursorY = this.settings.y + this.settings.height / 2;
+                        this.settings._angle   = -1; // unknown state
+                        $('#status').html(x_+"down<br>")
                     }
                 
                     if (this.dynStates.action)
@@ -1969,7 +1977,7 @@ var hqWidgets = {
                 this.settings._jleft.show ();
         }
         this.OnClick = function () {
-            //$('#status').append('click start ' + this.settings._isEditMode+" " + this.clickTimer +'<br>');
+            $('#status').append('click start ' + this.settings._isEditMode+" " + this.clickTimer +'<br>');
             // Filter the double click 
             if (this.settings._clickTimer) return;
             this.settings._clickTimer = setTimeout (function (elem) { 
@@ -1988,7 +1996,7 @@ var hqWidgets = {
                 this.ShowBigWindow(true);	
                 
             //hqWidgets.gDynamics.gActiveElement = null;
-            //$('#status').append('click end ' + this.settings._isEditMode+" " + this.clickTimer +" "+ this.dynStates.state+'<br>');
+            $('#status').append('click end ' + this.settings._isEditMode+" " + this.clickTimer +" "+ this.dynStates.state+'<br>');
         }
         this.OnMouseMove = function (x_, y_) {
             if (this.settings._isEditMode) {
@@ -2020,6 +2028,7 @@ var hqWidgets = {
             else
             if (this.settings.buttonType == hqWidgets.gButtonType.gTypeDimmer && this.settings._isPressed)
             {
+                $('#status').append(x_+"aaa<br>")
                 // filter out normal mouse click
                 var mustBe = 0;
                 if (!this.settings._isNonClick) mustBe = 20;
@@ -2029,12 +2038,35 @@ var hqWidgets = {
                         
                 if (delta > mustBe)
                 {
+                    // Y/X = tg (A)
+                    var center_x = (this.settings.x + this.settings.width  / 2);
+                    var center_y = (this.settings.y + this.settings.height / 2);
+                    var ang = 0;
+                    if (y_ >= center_y && x_ >= center_x)
+                        ang = (270 + Math.atan ((y_ - center_y) / (x_ - center_x)) / 3.14149 * 180);
+                    else
+                    if (y_ >= center_y && x_ < center_x)
+                        ang = (90  + Math.atan ((y_ - center_y) / (x_ - center_x)) / 3.14149 * 180);
+                    else
+                    if (y_ < center_y && x_ < center_x)
+                        ang = (90  + Math.atan ((y_ - center_y) / (x_ - center_x)) / 3.14149 * 180);
+                    else
+                        ang = (270 + Math.atan ((y_ - center_y) / (x_ - center_x)) / 3.14149 * 180);
+                    
+                    var newang = Math.floor (ang / 90);
+                    if (this.settings._angle == -1)
+                        this.settings._angle = newang;
+                    else
+                    if (this.settings._angle == 0 && newang == 3)
+                        ang = 0;
+                    else
+                    if (this.settings._angle == 3 && newang == 0)
+                        ang = 360;
+                    else
+                        this.settings._angle = newang;
+
                     this.settings._isMoved = true;
-                    var percent = (x_ - this.settings._cursorX) * (x_ - this.settings._cursorX) + 
-                                  (y_ - this.settings._cursorY) * (y_ - this.settings._cursorY);
-                    percent = Math.sqrt (percent) * 1.2;
-                    percent -= (this.settings.height / 2) * 1.5;
-                    percent = Math.floor (percent);
+                    percent = Math.floor (ang / 360 * 100);
                     this.SetPercent (percent, true);
                 }	            
             }
@@ -2260,15 +2292,16 @@ var hqWidgets = {
                     this.settings._jdimmer.y = this.settings._jdimmer.canvas.height / 2;
                     
                     this.settings._jright=$('#'+this.advSettings.elemName+"_right");
-                    this.settings._jright.css({position: 'absolute', 
-                                               top:      this.settings.y, 
-                                               left:     this.settings.x+this.settings.width/2, 
+                    this.settings._jright.css({position:     'absolute', 
+                                               top:          this.settings.y, 
+                                               left:         this.settings.x+this.settings.width/2, 
                                                borderRadius: 10, 
-                                               height:   30, 
-                                               width:    hqWidgets.gOptions.gBtWidth*0.7 + this.settings.width/2, 
-                                               'z-index':(this.settings.zindex == 'auto') ? -1 : this.settings.zindex-1, 
-                                               fontSize: 10, 
-                                               color:    'black'}); // Set size
+                                               height:       30, 
+                                               width:        hqWidgets.gOptions.gBtWidth*0.7 + this.settings.width/2, 
+                                               'z-index':    (this.settings.zindex == 'auto') ? -1 : this.settings.zindex-1, 
+                                               fontSize:     10, 
+                                               color:        'black'}); // Set size
+                                               
                     this.settings._jright.addClass ("hq-button-base-info").show();
                     
                     if (!document.getElementById(this.advSettings.elemName+"_percent"))
@@ -2981,7 +3014,7 @@ var hqWidgets = {
             this.e_internal.attr.buttonType != hqWidgets.gButtonType.gTypeImage && 
             this.e_internal.attr.buttonType != hqWidgets.gButtonType.gTypeBlind) {
             sText += "<tr><td>"+ hqWidgets.Translate("Radius:")+"</td><td id='"+this.e_settings.elemName+"_radius'></td></tr>";
-            //sText += "<tr><td>"+ hqWidgets.Translate("jQuery Styles:")+"</td><td><input type='checkbox' id='"+this.e_settings.elemName+"_jstyle' "+((this.e_internal.attr.usejQueryStyle) ? "checked" : "")+">";
+            sText += "<tr><td>"+ hqWidgets.Translate("jQuery Styles:")+"</td><td><input type='checkbox' id='"+this.e_settings.elemName+"_jstyle' "+((this.e_internal.attr.usejQueryStyle) ? "checked" : "")+">";
         }
 
         if (this.e_internal.attr.buttonType == hqWidgets.gButtonType.gTypeDoor) {
