@@ -9,14 +9,11 @@ Actually library has following widgets:
 - Window blind – to present and control one blind and display up to 4 window leafs
 - Indoor temperature – to display indoor temperature and humidity with desired temperature and valve state
 - Outdoor temperature – to display outdoor temperature and humidity
-- Door – to present a door
-- Lock – to present and control lock
-- Image – to show a static image
-- Text – to show a static text with different colors and font styles
-- Info – To display some information. Supports format string, condition for active state and different icons for active and static state.
- 
- Known problems: 
- - Dimmer does not work on mobile devices
+- Door   – to present a door
+- Lock   – to present and control lock
+- Image  – to show a static image
+- Text   – to show a static text with different colors and font styles
+- Info   – To display some information. Supports format string, condition for active state and different icons for active and static state.
  
 ------ Version V0.1 ------
  
@@ -117,6 +114,7 @@ var hqWidgets = {
         gDivID               : 0,       // Used for div name generation
         gBodyStyle           : "",      // Body class
         gElements            : new Array(),
+        gClickTimer          : null,    // Timer to filer out the double clicks
     },
     Translate: function (text) {
         return text;
@@ -140,6 +138,11 @@ var hqWidgets = {
     // Internal functions
     // On mouse up event handler
     onMouseUp: function (isTouch) {
+        //$('#status').append("global UP<br>");
+        // Workaround for tablets
+        if (hqWidgets.gDynamics.gClickTimer)
+            return;
+            
         if (this.gDynamics.gActiveElement != null)
         {
             this.gDynamics.gActiveElement.OnMouseUp ();		
@@ -148,6 +151,7 @@ var hqWidgets = {
         else
         if (this.gDynamics.gActiveBig!=null)
         {
+                
             this.gDynamics.gActiveBig.ShowBigWindow(false);
             this.gDynamics.gActiveBig.SendPercent ();
             this.gDynamics.gActiveBig=null;		
@@ -450,6 +454,7 @@ var hqWidgets = {
             _jbigBlind1:  null,         // jQuery (rolladen) movable part on the _jbigWindow
             _jicon:       null,         // jQuery working, unknown state or refreshing icon state
             _jstaticText: null,         // jQuery static text container (Only if gTypeText)
+
             
         };
         
@@ -741,7 +746,10 @@ var hqWidgets = {
             if (isForce || this.settings.width != _width || this.settings.height != _height) {
                 this.settings.width  = _width;
                 this.settings.height = _height;
-                this.settings._jelement.css ({width: _width, height: _height});	
+                this.settings._jelement.css  ({width: _width, height: _height});	
+                if (this.settings._jeventhnd)
+                    this.settings._jeventhnd.css ({width: _width, height: _height});	
+
                 if (this.settings._jbigWindow)
                 {
                     var xx = this.settings.x + (this.settings._jelement.width()  - this.settings._jbigWindow.width())/2;
@@ -1192,7 +1200,9 @@ var hqWidgets = {
             {
                 this.settings.x = x_;
                 this.settings.y = y_;
-                this.settings._jelement.css({left: x_, top: y_});
+                this.settings._jelement.css ({left: x_, top: y_});
+                //if (this.settings._jeventhnd)
+                //    this.settings._jeventhnd.css({left: x_, top: y_});
                 if (this.settings._jright) 
                     this.settings._jright.css({top:y_, left:x_+this.settings._jelement.width()/2});
                 if (this.settings._jleft)  
@@ -1409,7 +1419,9 @@ var hqWidgets = {
                 this.settings._jbigWindow.css ({top:    this.settings.y, 
                                                 left:   this.settings.x, 
                                                 width:  this.settings._jelement.width(), 
-                                                height: this.settings._jelement.height()});
+                                                height: this.settings._jelement.height(),
+                                                'z-index': 22, 
+                                                });
                                                 
                 this.settings._jbigWindow.animate ({top:    this.settings._jbigWindow.y, 
                                                     left:   this.settings._jbigWindow.x, 
@@ -1528,8 +1540,8 @@ var hqWidgets = {
                 
             if ((this.settings._isHoover || this.settings._isPressed) && !this.settings._isEditMode)
             {
-                if (this.settings._jcenter && this.settings._isPressed)
-                    this.settings._jcenter.hide ();  
+                //if (this.settings._jcenter && this.settings._isPressed)
+                //    this.settings._jcenter.hide ();  
                     
                 if (this.settings._jright)
                     this.settings._jright.show ();
@@ -1572,8 +1584,8 @@ var hqWidgets = {
                 }
             }
             else {
-                if (this.settings._jcenter)
-                    this.settings._jcenter.show ();
+                //if (this.settings._jcenter)
+                //    this.settings._jcenter.show ();
                
                 if (this.settings._jdimmer)
                     this.settings._jdimmer.hide ();
@@ -1666,90 +1678,6 @@ var hqWidgets = {
                 if (this.settings._jhumid)   this.settings._jhumid.html('--,-%');
             }
         }
-        this.settings._jelement.bind ("mouseenter", {msg: this}, function (event)	{
-            var obj = event.data.msg;
-            if (obj.settings.buttonType == hqWidgets.gButtonType.gTypeImage)
-                return;
-            
-            if (!hqWidgets.gDynamics.gActiveElement || 
-                 hqWidgets.gDynamics.gActiveElement == this)
-                obj.settings._isHoover = true;
-            
-            if (!obj.settings._isEditMode || !obj.settings._isPressed)
-            {		
-                if (obj.settings.buttonType != hqWidgets.gButtonType.gTypeBlind && obj.dynStates.action)
-                {
-                    if (obj.settings._isEditMode && obj.settings.isIgnoreEditMode)
-                        obj.SetClass (obj.settings._backOnHover, 100);
-                    else
-                    if (obj.dynStates.state != hqWidgets.gState.gStateOn)
-                        obj.SetClass (obj.settings._backOffHover, 100);
-                    else
-                        obj.SetClass (obj.settings._backOnHover, 100);
-                }
-                if (obj.settings.buttonType == hqWidgets.gButtonType.gTypeDimmer && !obj.settings._isEditMode) {
-                    obj.ShowDimmerState ();
-                }
-            }
-        });
-        this.settings._jelement.bind ("mouseleave", {msg: this}, function (event)	{			
-            var obj = event.data.msg;
-            if (obj.settings.buttonType == hqWidgets.gButtonType.gTypeImage)
-                return;
-            var _width  = obj.settings._jelement.width();
-            var _height = obj.settings._jelement.height();
-
-            obj.settings._isHoover = false;
-            
-            // Disable pressed if without hqUtils
-            if (obj.settings._isEditMode && !obj.settings.isContextMenu)
-                obj.settings._isPressed = false;
-
-            if (!obj.settings._isEditMode || !obj.settings._isPressed)
-            {	
-                if (obj.settings.buttonType == hqWidgets.gButtonType.gTypeDimmer && !obj.settings._isEditMode) {
-                    if (!obj.settings._isPressed)
-                        obj.ShowDimmerState ();
-                    else
-                        return;
-                }
-            
-                if (obj.settings._isPressed)
-                {                
-                    obj.settings._isPressed = false;
-                    if (obj.settings.buttonType != hqWidgets.gButtonType.gTypeBlind)
-                    {
-                        obj.settings._jelement.stop().animate({width:        _width, 
-                                                               height:       _height, 
-                                                               borderRadius: obj.settings.radius, 
-                                                               left:         obj.settings.x, 
-                                                               top:          obj.settings.y}, 50);
-                        if (obj.settings._jcenter)
-                            obj.settings._jcenter.stop().animate({width:  hqWidgets.gOptions.gBtIconWidth, 
-                                                                  height: hqWidgets.gOptions.gBtIconHeight, 
-                                                                  left:  (_width  - hqWidgets.gOptions.gBtIconWidth)/2, 
-                                                                  top:   (_height - hqWidgets.gOptions.gBtIconHeight)/2}, 50);
-                        obj.settings._jicon.stop().animate({top:  (_height / 15), 
-                                                            left: (_width  / 15)}, 50);
-                        if (obj.settings._jtemp)     obj.settings._jtemp.stop().show(50);
-                        if (obj.settings._jhumid)    obj.settings._jhumid.stop().show(50);
-                        if (obj.settings._jright)    obj.settings._jright.stop().show(50);
-                        if (obj.settings._jinfoText) obj.settings._jinfoText.stop().show(50);
-                    }
-                }
-                
-                if (obj.dynStates.action && obj.settings.buttonType != hqWidgets.gButtonType.gTypeImage)
-                {
-                    if (obj.settings._isEditMode && obj.settings.isIgnoreEditMode)
-                        obj.SetClass (obj.settings._backOn, 100);
-                    else
-                    if (obj.dynStates.state != hqWidgets.gState.gStateOn)
-                        obj.SetClass (obj.settings._backOff, 100);
-                    else
-                        obj.SetClass (obj.settings._backOn, 100);
-                }
-            }
-        });	
         this.OnContextMenu = function (x_, y_, isTouch)	{
             if (this.settings._isEditMode && this.settings._contextMenu && !this.settings._contextMenu.IsEmpty ())
             {
@@ -1781,7 +1709,18 @@ var hqWidgets = {
                         this.settings._cursorX = this.settings.x + this.settings.width  / 2;
                         this.settings._cursorY = this.settings.y + this.settings.height / 2;
                         this.settings._angle   = -1; // unknown state
-                        $('#status').html(x_+"down<br>")
+                        
+                        // Wokaround for tablets
+                        this.settings._hideDimmer = setTimeout (function (elem) {
+                            //$('#status').append("try clear");
+                            if (elem.settings._isMoved)
+                                return;
+                            //$('#status').append(" now clear");
+                            elem.settings._isPressed = false;
+                            elem.settings._isHoover  = false;
+                            elem.ShowDimmerState ();
+                        }, 2000, this);
+                        //$('#status').html(x_+"down<br>")
                     }
                 
                     if (this.dynStates.action)
@@ -1806,10 +1745,10 @@ var hqWidgets = {
                                                                    left:  (_width - iShrink - hqWidgets.gOptions.gBtIconWidth  + iShrinkCtr)/2, 
                                                                    top:   (_height- iShrink - hqWidgets.gOptions.gBtIconHeight + iShrinkCtr)/2}, 50);
                                                                    
-                        if (this.settings._jtemp)     this.settings._jtemp.stop().hide(50);
+                        /*if (this.settings._jtemp)     this.settings._jtemp.stop().hide(50);
                         if (this.settings._jhumid)    this.settings._jhumid.stop().hide(50);
                         if (this.settings._jright)    this.settings._jright.stop().hide(50);
-                        if (this.settings._jinfoText) this.settings._jinfoText.stop().hide(50);
+                        if (this.settings._jinfoText) this.settings._jinfoText.stop().hide(50);*/
                         
                         this.settings._jicon.stop().animate({top:  (_height / 15 + iShrink / 2), 
                                                              left: (_width  / 15 + iShrink / 2)}, 50);
@@ -1977,13 +1916,18 @@ var hqWidgets = {
                 this.settings._jleft.show ();
         }
         this.OnClick = function () {
-            $('#status').append('click start ' + this.settings._isEditMode+" " + this.clickTimer +'<br>');
+            //$('#status').append('click start ' + this.settings._isEditMode+" " + this.clickTimer +'<br>');
             // Filter the double click 
             if (this.settings._clickTimer) return;
             this.settings._clickTimer = setTimeout (function (elem) { 
                 clearTimeout (elem.settings._clickTimer);
                 elem.settings._clickTimer = null;
-            }, 300, this);
+            }, 500, this);
+            
+            hqWidgets.gDynamics.gClickTimer = setTimeout (function () {
+                clearTimeout (hqWidgets.gDynamics.gClickTimer);
+                hqWidgets.gDynamics.gClickTimer = null;
+            }, 500);
             
             if (hqWidgets.gDynamics.gShownBig != null && hqWidgets.gDynamics.gShownBig != this)
                 hqWidgets.gDynamics.gShownBig.ShowBigWindow(false);
@@ -1996,7 +1940,7 @@ var hqWidgets = {
                 this.ShowBigWindow(true);	
                 
             //hqWidgets.gDynamics.gActiveElement = null;
-            $('#status').append('click end ' + this.settings._isEditMode+" " + this.clickTimer +" "+ this.dynStates.state+'<br>');
+            //$('#status').append('click end ' + this.settings._isEditMode+" " + this.clickTimer +" "+ this.dynStates.state+'<br>');
         }
         this.OnMouseMove = function (x_, y_) {
             if (this.settings._isEditMode) {
@@ -2028,7 +1972,7 @@ var hqWidgets = {
             else
             if (this.settings.buttonType == hqWidgets.gButtonType.gTypeDimmer && this.settings._isPressed)
             {
-                $('#status').append(x_+"aaa<br>")
+                //$('#status').append(x_+"aaa<br>")
                 // filter out normal mouse click
                 var mustBe = 0;
                 if (!this.settings._isNonClick) mustBe = 20;
@@ -2071,56 +2015,6 @@ var hqWidgets = {
                 }	            
             }
         }
-        this.settings._jelement.bind ("mousedown", {msg: this}, function (e)	{
-            if (e.button == 0) // right
-            {
-                if (e.data.msg.OnMouseDown(e.pageX, e.pageY, false)) {
-                    e.preventDefault();
-                }
-                // Hide active menu
-                if (hqWidgets.gDynamics.gActiveMenu)
-                {
-                    hqWidgets.gDynamics.gActiveMenu.Show(false);
-                    hqWidgets.gDynamics.gActiveMenu = null;
-                }
-            }
-            else
-                e.data.msg.OnContextMenu (e.pageX, e.pageY, false);
-                
-            return false;
-        });
-        this.advSettings.parent.on('contextmenu', '#'+this.advSettings.elemName, function(e){ 
-            if (e.target.parentQuery) 
-                e.target.parentQuery.OnContextMenu (e.pageX, e.pageY, false);
-            return false; 
-        });
-        this.settings._element.addEventListener('touchstart', function(e) {
-            hqWidgets.gDynamics.gIsTouch=true;
-            if (e.target.parentQuery.OnMouseDown (e.touches[0].pageX, e.touches[0].pageY, true))
-                e.preventDefault();		
-        }, false);
-        this.settings._jelement.bind ("resize", {msg: this}, function (e)	{
-            if (e.data.msg.settings.isContextMenu)
-                return;
-                    
-            e.data.msg.SetSize (e.data.msg.settings._jelement.width(), e.data.msg.settings._jelement.height());
-        });
-        this.settings._jelement.bind ("change", {msg: this}, function (e)	{
-            if (e.data.msg.settings.isContextMenu)
-                return;
-                    
-            var pos = e.data.msg.settings._jelement.position();
-            e.data.msg.SetPosition (pos.left, pos.top);
-        });
-        this.settings._element.addEventListener('touchend', function(e) {
-            e.target.parentQuery.OnMouseUp (true);
-        }, false);	
-        this.settings._jelement.bind ("click", {msg: this}, function (e)	{
-            e.data.msg.OnClick ();
-        });
-        this.settings._jelement.bind ("mouseup", {msg: this}, function (e)	{
-            e.data.msg.OnMouseUp (false);
-        });	
         this.Delete = function () {
             this.hide();
             this.settings._jelement.remove ();
@@ -2945,12 +2839,13 @@ var hqWidgets = {
                 this.settings.radius = (this.settings.width > this.settings.height) ? this.settings.height / 2 : this.settings.width / 2;
         }
 
-        // Remember actual position for calculations 
-        this.settings.x = this.settings._jelement.position().left;
-        this.settings.y = this.settings._jelement.position().top;
         
         // Apply all settings
         this.SetSettings (this.settings);
+        
+        // Remember actual position for calculations 
+        this.settings.x = this.settings._jelement.position().left;
+        this.settings.y = this.settings._jelement.position().top;
         
         // Show button
         this.ShowState ();
@@ -2958,6 +2853,162 @@ var hqWidgets = {
         // Disable context menu on the page
         if (this.settings.isContextMenu)
             document.oncontextmenu = function() {return false;};
+            
+        // Create invisible handler layer
+        this.settings._eventhnd = document.getElementById (this.advSettings.elemName+'_hnd');
+        // Create HTML container if not exists
+        if (!this.settings._eventhnd) {
+            var $newdiv1 = $('<div id="'+this.advSettings.elemName+'_hnd"></div>');
+            this.settings._jelement.append ($newdiv1); 
+            this.settings._eventhnd = document.getElementById (this.advSettings.elemName+'_hnd');
+        }
+        
+        this.settings._jeventhnd = $('#'+this.advSettings.elemName+'_hnd');        
+        this.settings._jeventhnd.css ({width:  this.settings.width, 
+                                      height: this.settings.height,
+                                      top:    0,//this.settings.y,
+                                      left:   0,//this.settings.x,
+                                      'z-index': 21,
+                                      position: 'absolute',
+                                      "background-color": "transparent",
+                                      });
+        this.settings._eventhnd.parentQuery = this;
+        // ------------ Install all handlers on invisible handling div -----------------------------
+        this.settings._jeventhnd.bind ("mouseenter", {msg: this}, function (event)	{
+            var obj = event.data.msg;
+            if (obj.settings.buttonType == hqWidgets.gButtonType.gTypeImage)
+                return;
+            
+            if (!hqWidgets.gDynamics.gActiveElement || 
+                 hqWidgets.gDynamics.gActiveElement == this)
+                obj.settings._isHoover = true;
+            
+            if (!obj.settings._isEditMode || !obj.settings._isPressed)
+            {		
+                if (obj.settings.buttonType != hqWidgets.gButtonType.gTypeBlind && obj.dynStates.action)
+                {
+                    if (obj.settings._isEditMode && obj.settings.isIgnoreEditMode)
+                        obj.SetClass (obj.settings._backOnHover, 100);
+                    else
+                    if (obj.dynStates.state != hqWidgets.gState.gStateOn)
+                        obj.SetClass (obj.settings._backOffHover, 100);
+                    else
+                        obj.SetClass (obj.settings._backOnHover, 100);
+                }
+                if (obj.settings.buttonType == hqWidgets.gButtonType.gTypeDimmer && !obj.settings._isEditMode) {
+                    obj.ShowDimmerState ();
+                }
+            }
+        });
+        this.settings._jeventhnd.bind ("mouseleave", {msg: this}, function (event)	{			
+            var obj = event.data.msg;
+            if (obj.settings.buttonType == hqWidgets.gButtonType.gTypeImage)
+                return;
+            var _width  = obj.settings._jelement.width();
+            var _height = obj.settings._jelement.height();
+
+            obj.settings._isHoover = false;
+            
+            // Disable pressed if without hqUtils
+            if (obj.settings._isEditMode && !obj.settings.isContextMenu)
+                obj.settings._isPressed = false;
+
+            if (!obj.settings._isEditMode || !obj.settings._isPressed)
+            {	
+                if (obj.settings.buttonType == hqWidgets.gButtonType.gTypeDimmer && !obj.settings._isEditMode) {
+                    if (!obj.settings._isPressed)
+                        obj.ShowDimmerState ();
+                    else
+                        return;
+                }
+            
+                if (obj.settings._isPressed)
+                {                
+                    obj.settings._isPressed = false;
+                    if (obj.settings.buttonType != hqWidgets.gButtonType.gTypeBlind)
+                    {
+                        obj.settings._jelement.stop().animate({width:        _width, 
+                                                               height:       _height, 
+                                                               borderRadius: obj.settings.radius, 
+                                                               left:         obj.settings.x, 
+                                                               top:          obj.settings.y}, 50);
+                        if (obj.settings._jcenter)
+                            obj.settings._jcenter.stop().animate({width:  hqWidgets.gOptions.gBtIconWidth, 
+                                                                  height: hqWidgets.gOptions.gBtIconHeight, 
+                                                                  left:  (_width  - hqWidgets.gOptions.gBtIconWidth)/2, 
+                                                                  top:   (_height - hqWidgets.gOptions.gBtIconHeight)/2}, 50);
+                        obj.settings._jicon.stop().animate({top:  (_height / 15), 
+                                                            left: (_width  / 15)}, 50);
+                        if (obj.settings._jtemp)     obj.settings._jtemp.stop().show(50);
+                        if (obj.settings._jhumid)    obj.settings._jhumid.stop().show(50);
+                        if (obj.settings._jright)    obj.settings._jright.stop().show(50);
+                        if (obj.settings._jinfoText) obj.settings._jinfoText.stop().show(50);
+                    }
+                }
+                
+                if (obj.dynStates.action && obj.settings.buttonType != hqWidgets.gButtonType.gTypeImage)
+                {
+                    if (obj.settings._isEditMode && obj.settings.isIgnoreEditMode)
+                        obj.SetClass (obj.settings._backOn, 100);
+                    else
+                    if (obj.dynStates.state != hqWidgets.gState.gStateOn)
+                        obj.SetClass (obj.settings._backOff, 100);
+                    else
+                        obj.SetClass (obj.settings._backOn, 100);
+                }
+            }
+        });	
+        this.settings._jeventhnd.bind ("mousedown", {msg: this}, function (e)	{
+            if (e.button == 0) // right
+            {
+                if (e.data.msg.OnMouseDown(e.pageX, e.pageY, false)) {
+                    e.preventDefault();
+                }
+                // Hide active menu
+                if (hqWidgets.gDynamics.gActiveMenu)
+                {
+                    hqWidgets.gDynamics.gActiveMenu.Show(false);
+                    hqWidgets.gDynamics.gActiveMenu = null;
+                }
+            }
+            else
+                e.data.msg.OnContextMenu (e.pageX, e.pageY, false);
+                
+            return false;
+        });
+        this.advSettings.parent.on('contextmenu', '#'+this.advSettings.elemName, function(e){ 
+            if (e.target.parentQuery) 
+                e.target.parentQuery.OnContextMenu (e.pageX, e.pageY, false);
+            return false; 
+        });
+        this.settings._eventhnd.addEventListener('touchstart', function(e) {
+            hqWidgets.gDynamics.gIsTouch=true;
+            if (e.target.parentQuery.OnMouseDown (e.touches[0].pageX, e.touches[0].pageY, true))
+                e.preventDefault();		
+        }, false);
+        this.settings._eventhnd.addEventListener('touchend', function(e) {
+            e.target.parentQuery.OnMouseUp (true);
+        }, false);	
+        this.settings._jeventhnd.bind ("resize", {msg: this}, function (e)	{
+            if (e.data.msg.settings.isContextMenu)
+                return;
+                    
+            e.data.msg.SetSize (e.data.msg.settings._jelement.width(), e.data.msg.settings._jelement.height());
+        });
+        this.settings._jeventhnd.bind ("change", {msg: this}, function (e)	{
+            if (e.data.msg.settings.isContextMenu)
+                return;
+                    
+            var pos = e.data.msg.settings._jelement.position();
+            e.data.msg.SetPosition (pos.left, pos.top);
+        });
+        this.settings._jeventhnd.bind ("click", {msg: this}, function (e)	{
+            e.data.msg.OnClick ();
+        });
+        this.settings._jeventhnd.bind ("mouseup", {msg: this}, function (e)	{
+            e.data.msg.OnMouseUp (false);
+        });	
+
     },
     // Creates in the parent table lines with settings
     hqButtonEdit: function (options, obj, additionalSettingsFunction)
