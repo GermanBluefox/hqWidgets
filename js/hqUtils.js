@@ -854,7 +854,7 @@ var hqUtils = {
                 }
                 if (this.options.buttonType == hqWidgets.gButtonType.gTypeBlind)
                 {
-                    var wnd = this.jbutton.GetWindowType ();
+                    var wnd = this.jbutton._GetWindowType ();
                     var a = wnd.split(',');
                     
                     sText += "<tr><td>"+ hqWidgets.Translate("Slide&nbsp;count:")+"</td><td><select style='width: 100%' id='"+this.elemName+"_wndCount'>";
@@ -1002,7 +1002,7 @@ var hqUtils = {
                     elem.parent = this;
                     $('#'+this.elemName+'_wndCount').change (function () {
                             var iCnt = $(this).val();
-                            var a = this.parent.jbutton.GetWindowType ().split(',');
+                            var a = this.parent.jbutton._GetWindowType ().split(',');
                             var i;
                             var newS = "";
                             var state = "";
@@ -1028,7 +1028,7 @@ var hqUtils = {
                         elem.parent = this;
                         elem.index = i;
                         $('#'+this.elemName+'_wnd'+i).change (function () {
-                                var a = this.parent.jbutton.GetWindowType ().split(',');
+                                var a = this.parent.jbutton._GetWindowType ().split(',');
                                 var i;
                                 var newS = "";
                                 for (i = 0; i < a.length; i++)

@@ -12,6 +12,12 @@
 
 <script type="text/javascript">
 
+
+// Default body stle
+var gBodyStyle = "hq-background-h-gradient-gray-0";
+
+
+// Simulated image list. Normally this list must return server via some request
 var aImages = new Array(
 		"flat.png",
 		"kde_folder.png",
@@ -23,9 +29,7 @@ var aImages = new Array(
 		"LockOpened.png",
 		"LockOrange.png",
 		"unlocked.png");
-
-var gBodyStyle = "hq-background-h-gradient-gray-0";
-
+        
 // Request by server the image list in the pictures directory
 function GetPicturesList (callback, param) {
 	// callback (list)
@@ -44,22 +48,41 @@ function GetPicturesList (callback, param) {
     // Apply current body style
     $('body').addClass(gBodyStyle);
     
-    hqWidgets.Init ({gGetImages: GetPicturesList});
+    function onTimeoutChange (p) {
+        p.SetState ( p.dynStates.state == hqWidgets.gState.gStateOff ? hqWidgets.gState.gStateOn : hqWidgets.gState.gStateOff);
+        setTimeout (function (elem) {onTimeoutChange (elem);}, 5000, p);
+    }
+    
+    // Init hqWidgets framework
+    hqWidgets.Init ({gGetFiles: GetPicturesList});
     var isCtxMenu = true;
 
-    // Create buttons
-	var bg = hqWidgets.Create ({isContextMenu: isCtxMenu, x:10,  y: 60, buttonType: hqWidgets.gButtonType.gTypeImage, iconName:'flat.png', zindex: -2});
-	var b0 = hqWidgets.Create ({isContextMenu: isCtxMenu, x:350, y:200, room: hqWidgets.Translate("Dimmer"),  buttonType: hqWidgets.gButtonType.gTypeDimmer, iconName: 'Lamp.png', position: 100});//, 'original/motion.png');
-	var b01= hqWidgets.Create ({isContextMenu: isCtxMenu, x:350,y:260,  room: hqWidgets.Translate("Dimmer1"), buttonType: hqWidgets.gButtonType.gTypeDimmer, iconName: 'Lamp.png', position: 100});//, 'original/motion.png');
-	var b1 = hqWidgets.Create ({isContextMenu: isCtxMenu, x:60,  y:150,  room: hqWidgets.Translate("Schlaffzimmer"), lowBattery:true, buttonType: hqWidgets.gButtonType.gTypeInTemp, iconName: 'Temperature.png'});//, 'original/motion.png');
-	var b2 = hqWidgets.Create ({isContextMenu: isCtxMenu, x:70,  y:70,  room: hqWidgets.Translate("Balkon"),  buttonType: hqWidgets.gButtonType.gTypeOutTemp, iconName: 'Temperature.png'});
-	var b3 = hqWidgets.Create ({isContextMenu: isCtxMenu, x:140, y:70,  room: hqWidgets.Translate("Wohzimmer"),  iconName: 'Lamp.png', radius: 5, title: "Test", iconOn: 'Green_Battery.png', infoTextCss: {color: 'white'}});
+    // ---------------- Create buttons --------------------------
+    // Create background image
+	var bg = hqWidgets.Create ({isContextMenu: isCtxMenu, x:10,  y: 60,                                          buttonType: hqWidgets.gButtonType.gTypeImage,    iconName:'flat.png', zindex: -2});
+	// create dimmer 1
+    var b0 = hqWidgets.Create ({isContextMenu: isCtxMenu, x:350, y:200, room: hqWidgets.Translate("Dimmer"),     buttonType: hqWidgets.gButtonType.gTypeDimmer,   iconName: 'Lamp.png', position: 100, hoursLastAction:-1});//, 'original/motion.png');
+	// create dimmer 2
+    var b01= hqWidgets.Create ({isContextMenu: isCtxMenu, x:350, y:260, room: hqWidgets.Translate("Dimmer1"),    buttonType: hqWidgets.gButtonType.gTypeDimmer,   iconName: 'Lamp.png', position: 100, hoursLastAction:-1});//, 'original/motion.png');
+	// create inside temperature (with valve state)
+    var b1 = hqWidgets.Create ({isContextMenu: isCtxMenu, x:60,  y:150, room: hqWidgets.Translate("Schlaffzimmer"),buttonType: hqWidgets.gButtonType.gTypeInTemp, iconName: 'Temperature.png'});//, 'original/motion.png');
+	var b2 = hqWidgets.Create ({isContextMenu: isCtxMenu, x:70,  y:70,  room: hqWidgets.Translate("Balkon"),     buttonType: hqWidgets.gButtonType.gTypeOutTemp,  iconName: 'Temperature.png'});
+	var b3 = hqWidgets.Create ({isContextMenu: isCtxMenu, x:140, y:70,  room: hqWidgets.Translate("Wohzimmer"),  iconName: 'Lamp.png', radius: 5, title: "Test", infoTextCss: {color: 'white'}});
     var b4 = hqWidgets.Create ({isContextMenu: isCtxMenu, x:210, y:70,  room: hqWidgets.Translate("Wohzimmer"),  buttonType: hqWidgets.gButtonType.gTypeBlind});
 	var b5 = hqWidgets.Create ({isContextMenu: isCtxMenu, x:380, y:70,  room: hqWidgets.Translate("Wohzimmer"),  buttonType: hqWidgets.gButtonType.gTypeBlind});
-	var b6 = hqWidgets.Create ({isContextMenu: isCtxMenu, x:100, y:140, room: hqWidgets.Translate("Wohzimmer"),  buttonType: hqWidgets.gButtonType.gTypeDoor, width: 50, height:100, border:2, doorType: hqWidgets.gSwingType.gSwingRight});
+	var b6 = hqWidgets.Create ({isContextMenu: isCtxMenu, x:120, y:180, room: hqWidgets.Translate("Wohzimmer"),  buttonType: hqWidgets.gButtonType.gTypeDoor, width: 50, height:100, border:2, doorType: hqWidgets.gSwingType.gSwingRight});
 	var b7 = hqWidgets.Create ({isContextMenu: isCtxMenu, x:110, y:170, room: hqWidgets.Translate("WC"),         buttonType: hqWidgets.gButtonType.gTypeLock, width: 30, height:30, _noBackground: true, iconName: 'unlocked.png', doorType: hqWidgets.gSwingType.gSwingRight});
 	var b8 = hqWidgets.Create ({isContextMenu: isCtxMenu, x:210, y:170, room: hqWidgets.Translate("KZ"),         buttonType: hqWidgets.gButtonType.gTypeText, text: 'Sample text'});
-	var editMode = hqWidgets.Create ({isContextMenu: isCtxMenu, x:300, y:300, title:hqWidgets.Translate("Edit mode"), divName: "edit_mode"});
+	// Create ip cam widget
+    var b9 = hqWidgets.Create ({isContextMenu: isCtxMenu, x:220, y:370, room: hqWidgets.Translate("KZ"),         buttonType: hqWidgets.gButtonType.gTypeGong,  /*radius:2,width:100, height:60,  */ipCamImageURL: 'http://blog-imgs-55-origin.fc2.com/k/i/t/kitchencounterdesign/House-Photo-2.jpg', popUpDelay: 10000, gongQuestionImg: 'DoorOpen.png', gongActionBtn: true, ipCamActionBtn: true, title: 'KZ Camera', iconName: 'ringing-bell.png', gongMelody: 'door-bell.mp3'});
+    var b10 =hqWidgets.Create ({isContextMenu: isCtxMenu, x:20,  y:330, room: hqWidgets.Translate("KZ"),         buttonType: hqWidgets.gButtonType.gTypeCam,  radius:2,width:100, height:60, ipCamImageURL: 'http://blog-imgs-55-origin.fc2.com/k/i/t/kitchencounterdesign/House-Photo-2.jpg', popUpDelay: 10000, /*gongActionBtn: true, ipCamActionBtn: true,*/ title: 'KZ Camera'});
+
+    onTimeoutChange(b3);
+        
+    setTimeout (function (a) { a.SetStates({state: hqWidgets.gState.gStateOn});}, 1000, b9);
+    setTimeout (function (a) { a.SetStates({state: hqWidgets.gState.gStateOff});}, 15000, b9);
+    setTimeout (function (a) { a.SetStates({state: hqWidgets.gState.gStateOn});}, 3000, b6);
+    var editMode = hqWidgets.Create ({isContextMenu: isCtxMenu, x:300, y:300, title:hqWidgets.Translate("Edit mode"), divName: "edit_mode"});
 	
     // Simulate dynamic changes
 	b3.SetStates ({infoText: "130"});
@@ -76,6 +99,9 @@ function GetPicturesList (callback, param) {
             console.log (p.settings.room + ": new status - " + p.dynStates.state);
         else
             console.log (p.settings.room + ": new value - " + value + "%");
+    }});
+    b1.SetStates ({action: function (p, op, value){
+        console.log (p.settings.room + ": new "+op+" - " + value);
     }});
     b7.SetStates ({action: function (p, op, value) {
         console.log (p.settings.room + ": new status - " + value);
@@ -94,8 +120,7 @@ function GetPicturesList (callback, param) {
         p.SetWindowState (1, hqWidgets.gWindowState.gWindowToggle);
         console.log (p.settings.room + ": new value - " + value + "%");
     }});	
-    b4.SetSettings ({width: 120, height: 70});;
-	b4.SetWindowType (hqWidgets.gSwingType.gSwingLeft, hqWidgets.gSwingType.gSwingRight);
+    b4.SetSettings ({width: 120, height: 70, windowConfig: hqWidgets.gSwingType.gSwingLeft+","+hqWidgets.gSwingType.gSwingRight});
 	b4.SetWindowState (0, hqWidgets.gOptions.gWindowOpened);
 	b4.SetWindowState (1, hqWidgets.gOptions.gWindowOpened);
 //	b6.SetState(hqWidgets.gState.gStateOn);
@@ -103,7 +128,13 @@ function GetPicturesList (callback, param) {
     b4.SetStates ({lowBattery: false});
     b4.SetStates ({lowBattery: true});
     b3.SetStates ({isStrengthShow: true, strength: -64});
-	//b4.SetType (hqWidgets.gButtonType.gTypeDoor);
+    
+    b9.SetStates({action: function (p, op, value) {
+        if (op == "state")
+            console.log (p.settings.title + ": play gong");
+        if (op == "open")
+            console.log (p.settings.title + ": open door");
+    }});	
 	
 	setTimeout (function () {b4.SetStates ({percentState: 80})}, 1000);
 	setTimeout (function () {b0.SetStates ({percentState: 20})}, 1000);
