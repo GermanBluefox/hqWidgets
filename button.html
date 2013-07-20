@@ -112,7 +112,9 @@ function GetPicturesList (callback, param) {
         p.SetStates ({state: hqWidgets.gState.gStateOff, isWorking: true});
         p.SetWindowState (0, hqWidgets.gWindowState.gWindowToggle);
         p.SetWindowState (1, hqWidgets.gWindowState.gWindowToggle);
+        p.SetWindowState (2, hqWidgets.gWindowState.gWindowToggle);
         console.log (p.settings.room + ": new value - " + value + "%");
+        p.SetStates({percentState: value});
     }});
 	b5.SetStates ({action: function (p, op, value) {
         p.SetStates ({state: hqWidgets.gState.gStateOff, isRefresh: true});
@@ -120,9 +122,9 @@ function GetPicturesList (callback, param) {
         p.SetWindowState (1, hqWidgets.gWindowState.gWindowToggle);
         console.log (p.settings.room + ": new value - " + value + "%");
     }});	
-    b4.SetSettings ({width: 120, height: 70, windowConfig: hqWidgets.gSwingType.gSwingLeft+","+hqWidgets.gSwingType.gSwingRight});
-	b4.SetWindowState (0, hqWidgets.gOptions.gWindowOpened);
-	b4.SetWindowState (1, hqWidgets.gOptions.gWindowOpened);
+    b4.SetSettings ({width: 140, height: 70, windowConfig: hqWidgets.gSwingType.gSwingLeft+","+hqWidgets.gSwingType.gSwingLeft+","+hqWidgets.gSwingType.gSwingRight});
+    b4.SetStates ({handleState: "1,2,3"});
+    //b4.SetStates ({windowState: "2,2"});
 //	b6.SetState(hqWidgets.gState.gStateOn);
     b4.SetStates ({lowBattery: true});
     b4.SetStates ({lowBattery: false});
