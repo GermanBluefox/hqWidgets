@@ -1,19 +1,19 @@
 /*
-hqWidgets is a ìhigh qualityî home automation widgets library.
+hqWidgets is a ‚Äúhigh quality‚Äù home automation widgets library.
 You can easy create the user interface for home automation with the help of this library using HTML, javascript and CSS.
  
 The library supports desktop and mobile browsers versions.
 Actually library has following widgets:
-- On/Off Button ñ To present and/or control some switch (e.g. Lamp)
-- Dimmer ñ To present and control dimmer
-- Window blind ñ to present and control one blind and display up to 4 window leafs
-- Indoor temperature ñ to display indoor temperature and humidity with desired temperature and valve state
-- Outdoor temperature ñ to display outdoor temperature and humidity
-- Door   ñ to present a door
-- Lock   ñ to present and control lock
-- Image  ñ to show a static image
-- Text   ñ to show a static text with different colors and font styles
-- Info   ñ To display some information. Supports format string, condition for active state and different icons for active and static state.
+- On/Off Button ‚Äì To present and/or control some switch (e.g. Lamp)
+- Dimmer ‚Äì To present and control dimmer
+- Window blind ‚Äì to present and control one blind and display up to 4 window leafs
+- Indoor temperature ‚Äì to display indoor temperature and humidity with desired temperature and valve state
+- Outdoor temperature ‚Äì to display outdoor temperature and humidity
+- Door   ‚Äì to present a door
+- Lock   ‚Äì to present and control lock
+- Image  ‚Äì to show a static image
+- Text   ‚Äì to show a static text with different colors and font styles
+- Info   ‚Äì To display some information. Supports format string, condition for active state and different icons for active and static state.
  
 ------ Version V0.1 ------
  
@@ -25,7 +25,7 @@ Used software and icons:
 * door bell by Lorc http://lorcblog.blogspot.de/
  
  
-Copyright (c) 2013 Denis Khaev deniskhaev@gmail.com
+Copyright (c) 2013 dogafox@gmail.com
  
 It is licensed under the Creative Commons Attribution-Non Commercial-Share Alike 3.0 license.
 The full text of the license you can get at http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
