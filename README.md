@@ -39,7 +39,7 @@ Actually library has following widgets:
 * jQuery UI http://jqueryui.com/
  
 ## License
-Copyright (c) 2013 Denis Khaev deniskhaev@gmail.com
+Copyright (c) 2013 dogafox@gmail.com
  
 It is licensed under the Creative Commons Attribution-Non Commercial-Share Alike 3.0 license.
 The full text of the license you can get at http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
